@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ตัวสร้างพร้อมท์ภาพและวิดีโอ (GitHub Pages สมบูรณ์)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+Thai:wght@400;500;700&display=swap');
+        body { font-family: 'Inter', 'Noto Sans Thai', sans-serif; }
+        textarea::-webkit-scrollbar { width: 8px; }
+        textarea::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+        textarea::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        textarea:focus::-webkit-scrollbar-thumb { background-color: #94a3b8; }
+        .image-preview { max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 0.75rem; margin-top: 1rem; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-full max-w-5xl">
+        <h1 class="text-2xl md:text-3xl font-bold text-center text-slate-800 mb-2">ตัวสร้างพร้อมท์ภาพและวิดีโอ By Page: AI LEARNING</h1>
+        <p class="text-center text-slate-500 mb-6">ป้อนไอเดีย เลือกแนว แล้วสร้าง Image Prompt + Video Prompt ได้ทันที (ระบบกรอกคีย์ปลอดภัยสูงสุด)</p>
+
+        <!-- แถบสีส้มสำหรับกรอก API Key เพื่อไม่ให้โดน GitHub ตรวจจับและสั่งแบนคีย์ถาวรอีกต่อไป -->
+        <div class="mb-6 bg-amber-50 p-4 rounded-xl border border-amber-200">
+            <label for="api-key-input" class="block text-amber-800 font-semibold mb-1">🔑 ใส่ Gemini API Key ชิ้นใหม่ของคุณที่นี่:</label>
+            <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full p-2.5 border-2 border-amber-300 rounded-lg focus:outline-none focus:border-amber-500 bg-white transition-colors duration-200" />
+            <p class="text-xs text-amber-600 mt-1">*สำคัญมาก: เพื่อความปลอดภัยตามกฎของ GitHub ห้ามฝังคีย์ในโค้ด ให้คัดลอกคีย์ใหม่มาแปะตรงนี้ ระบบจะจำคีย์ไว้ในเครื่องนี้ให้เองโดยอัตโนมัติครับ</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label for="idea-input" class="block text-slate-700 font-semibold mb-2">ไอเดียเริ่มต้น:</label>
+                <textarea id="idea-input" class="w-full min-h-[8rem] p-3 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-indigo-500 transition-colors duration-200 resize-none overflow-hidden" placeholder="เช่น 'ลุงกันกับป้าเที่ยวพาเที่ยวสวนสัตว์เขาเขียว' หรือ 'Yuki กับ Mochi ทำราเมง 10 นาที'"></textarea>
+            </div>
+            <div>
+                <span class="block text-slate-700 font-semibold mb-2">แนบรูปภาพตัวละคร/ฉาก (ถ้ามี):</span>
+                <!-- ปรับให้ใช้ label ครอบเพื่อให้การกดจิ้มบนมือถือสามารถเปิดคลังภาพได้ 100% ไม่โดนเบราว์เซอร์บล็อกคำสั่ง -->
+                <label for="image-upload" id="image-upload-container" class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-xl p-4 cursor-pointer hover:bg-slate-50 transition-colors duration-200 h-48 w-full text-center">
+                    <input type="file" id="image-upload" accept="image/*" class="hidden" />
+                    <span id="image-upload-text" class="text-slate-500 pointer-events-none">📸 คลิกตรงนี้เพื่อเลือกรูปภาพจากมือถือ</span>
+                    <img id="image-preview" src="#" alt="Image Preview" class="image-preview hidden pointer-events-none" />
+                    <button id="remove-image-button" class="mt-2 text-red-500 hidden font-semibold z-10" type="button">ลบรูปภาพ</button>
+                </label>
+            </div>
+        </div>
+
+        <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <h3 class="text-slate-700 font-semibold mb-3 text-lg">ตัวเลือกการสร้าง</h3>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label for="scene-count-input" class="block text-slate-600 font-medium mb-1">จำนวนฉาก:</label>
+                    <input type="number" id="scene-count-input" min="1" max="20" placeholder="อัตโนมัติ" class="w-full p-2 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors duration-200" />
+                </div>
+                <div class="flex items-center h-full mt-5">
+                    <input type="checkbox" id="no-subtitles-checkbox" class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" checked />
+                    <label for="no-subtitles-checkbox" class="ml-2 block text-slate-700">ไม่เอาข้อความบนหน้าจอ/ซับไตเติ้ล</label>
+                </div>
+                <div>
+                    <label for="content-style-select" class="block text-slate-600 font-medium mb-1">แนวคอนเทนต์:</label>
+                    <select id="content-style-select" class="w-full p-2 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors duration-200 bg-white">
+                        <option value="">AI คิดให้</option>
+                        <option value="travel">แนวท่องเที่ยว</option>
+                        <option value="cooking">แนวทำอาหาร</option>
+                        <option value="anime">แนวอนิเมะ</option>
+                        <option value="realistic">แนวภาพเสมือนจริง</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="camera-style-select" class="block text-slate-600 font-medium mb-1">สไตล์กล้อง:</label>
+                    <select id="camera-style-select" class="w-full p-2 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors duration-200 bg-white">
+                        <option value="">AI คิดให้</option>
+                        <option value="Cinematic">ภาพยนตร์ (Cinematic)</option>
+                        <option value="Commercial">โฆษณา (Commercial)</option>
+                        <option value="Documentary">สารคดี (Documentary)</option>
+                        <option value="Music Video">มิวสิกวิดีโอ (Music Video)</option>
+                        <option value="Handheld/POV">แฮนดิแคม / POV</option>
+                        <option value="Aerial/Motion">อากาศ/เคลื่อนที่</option>
+                        <option value="Emotional">ดราม่า/อารมณ์</option>
+                        <option value="Action">แอ็กชัน</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-6">
+            <button id="expand-button" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 w-full md:w-auto">✨ ขยายไอเดีย</button>
+        </div>
+
+        <div class="mb-6">
+            <label for="expanded-idea-output" class="block text-slate-700 font-semibold mb-2">ไอเดียที่ขยายแล้ว:</label>
+            <textarea id="expanded-idea-output" class="w-full min-h-[8rem] p-3 border-2 border-slate-300 rounded-xl resize-none overflow-hidden" placeholder="ไอเดียที่ขยายแล้วจะแสดงที่นี่..."></textarea>
+        </div>
+
+        <div class="mb-6 bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <span class="block text-slate-700 font-semibold">เลือกเวอร์ชันการสร้าง:</span>
+                <div class="flex flex-wrap items-center gap-6">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="model-version" value="gemini" checked class="form-radio text-indigo-600 h-4 w-4" />
+                        <span class="ml-2 text-slate-700">Gemini (Prompt ภาษาไทย)</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="model-version" value="flow" class="form-radio text-indigo-600 h-4 w-4" />
+                        <span class="ml-2 text-slate-700">Flow (Prompt ภาษาอังกฤษ + บทพูดไทย)</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center mb-4 space-y-2">
+            <button id="generate-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 w-full md:w-auto">สร้าง Image + Video Prompt</button>
+            <button id="copy-all-button" class="hidden bg-slate-700 hover:bg-slate-800 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition-all duration-200 w-full md:w-auto">📋 คัดลอกทั้งหมด</button>
+            <button id="save-prompts-button" class="hidden bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition-all duration-200 w-full md:w-auto">💾 บันทึกเป็นไฟล์ (.txt)</button>
+        </div>
+
+        <div id="loading-indicator-expand" class="hidden text-center text-slate-500 mb-4">กำลังขยายไอเดีย...</div>
+        <div id="loading-indicator-generate" class="hidden text-center text-slate-500 mb-6">กำลังสร้างพร้อมท์...</div>
+        <div id="loading-indicator-switch" class="hidden text-center text-slate-500 mb-6">กำลังสลับภาษา...</div>
+
+        <div>
+            <label class="block text-slate-700 font-semibold mb-2">พร้อมท์ที่สร้าง:</label>
+            <div id="prompt-output-container" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const apiKeyInput = document.getElementById('api-key-input');
+            const ideaInput = document.getElementById('idea-input');
+            const expandedIdeaOutput = document.getElementById('expanded-idea-output');
+            const expandButton = document.getElementById('expand-button');
+            const generateButton = document.getElementById('generate-button');
+            const savePromptsButton = document.getElementById('save-prompts-button');
+            const copyAllButton = document.getElementById('copy-all-button');
+            const promptOutputContainer = document.getElementById('prompt-output-container');
+            const loadingIndicatorExpand = document.getElementById('loading-indicator-expand');
+            const loadingIndicatorGenerate = document.getElementById('loading-indicator-generate');
+            const loadingIndicatorSwitch = document.getElementById('loading-indicator-switch');
+            const imageUploadInput = document.getElementById('image-upload');
+            const imagePreview = document.getElementById('image-preview');
+            const removeImageButton = document.getElementById('remove-image-button');
+            const imageUploadContainer = document.getElementById('image-upload-container');
+            const imageUploadText = document.getElementById('image-upload-text');
+            const sceneCountInput = document.getElementById('scene-count-input');
+            const noSubtitlesCheckbox = document.getElementById('no-subtitles-checkbox');
+            const cameraStyleSelect = document.getElementById('camera-style-select');
+            const contentStyleSelect = document.getElementById('content-style-select');
+
+            let uploadedImageBase64 = null;
+            let uploadedMimeType = 'image/png';
+
+            // ดึงคีย์เก่ามาใส่ให้ถ้ามีเซฟในเบราว์เซอร์
+            if (localStorage.getItem('gemini_api_key')) {
+                apiKeyInput.value = localStorage.getItem('gemini_api_key');
+            }
+            apiKeyInput.addEventListener('input', () => {
+                localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
+            });
+
+            imageUploadInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                uploadedMimeType = file.type || 'image/png';
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imagePreview.src = event.target.result;
+                    imagePreview.classList.remove('hidden');
+                    removeImageButton.classList.remove('hidden');
+                    imageUploadText.classList.add('hidden');
+                    uploadedImageBase64 = event.target.result.split(',')[1];
+                    imageUploadContainer.style.borderColor = '#10B981';
+                };
+                reader.readAsDataURL(file);
+            });
+
+            removeImageButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                imagePreview.src = '#';
+                imagePreview.classList.add('hidden');
+                removeImageButton.classList.add('hidden');
+                imageUploadText.classList.remove('hidden');
+                uploadedImageBase64 = null;
+                uploadedMimeType = 'image/png';
+                imageUploadInput.value = '';
+                imageUploadContainer.style.borderColor = '#CBD5E1';
+            });
+
+            function autoResizeTextarea(element) {
+                element.style.height = 'auto';
+                element.style.height = element.scrollHeight + 'px';
+            }
+            ideaInput.addEventListener('input', () => autoResizeTextarea(ideaInput));
+            expandedIdeaOutput.addEventListener('input', () => autoResizeTextarea(expandedIdeaOutput));
+
+            function getContentStyleInstruction(style) {
+                switch (style) {
+                    case 'travel': return { label: 'แนวท่องเที่ยว', expansion: 'เน้นบรรยากาศการเดินทาง...', generation: 'เขียนเป็นคอนเทนต์ท่องเที่ยว...' };
+                    case 'cooking': return { label: 'แนวทำอาหาร', expansion: 'เน้นวัตถุดิบ...', generation: 'เขียนเป็นคอนเทนต์ทำอาหาร...' };
+                    case 'anime': return { label: 'แนวอนิเมะ', expansion: 'เน้นภาพสไตล์อนิเมะ...', generation: 'เขียนเป็น anime cinematic prompt...' };
+                    case 'realistic': return { label: 'แนวภาพเสมือนจริง', expansion: 'เน้นความสมจริง...', generation: 'เขียนเป็น photorealistic cinematic prompt...' };
+                    default: return { label: 'AI คิดให้', expansion: 'อัตโนมัติ', generation: 'อัตโนมัติ' };
+                }
+            }
+
+            async function callGeminiApi(prompt, loadingIndicator, imageBase64 = null, mimeType = 'image/png') {
+                const currentKey = apiKeyInput.value.trim();
+                if (!currentKey) {
+                    alert('กรุณากรอก Gemini API Key ในช่องสีส้มด้านบนสุดก่อนกดใช้งานครับ!');
+                    loadingIndicator.classList.add('hidden');
+                    throw new Error('Missing Key');
+                }
+                loadingIndicator.classList.remove('hidden');
+                const parts = [{ text: prompt }];
+                if (imageBase64) parts.push({ inlineData: { mimeType, data: imageBase64 } });
+                const payload = { contents: [{ role: 'user', parts }] };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${currentKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) return await response.json();
+                    throw new Error('API Error');
+                } catch (error) {
+                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อ AI: กรุณาตรวจสอบว่า API Key ถูกต้อง คัดลอกมาครบถ้วน และไม่ถูกระงับครับ');
+                    loadingIndicator.classList.add('hidden');
+                    throw error;
+                }
+            }
+
+            function getGeneratedText(result) {
+                return result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            }
+
+            function extractSection(sceneText, sectionName) {
+                const escaped = sectionName.replace(/[.*+?^${}()|[\]\]/g, '\$&');
+                const sectionRegex = new RegExp(`${escaped}\s*:\s*([\s\S]*?)(?=\n\s*(Image Prompt|Video Prompt|Character Movement|Negative Prompt|Scene|ฉากที่)\s*:|$)`, 'i');
+                const match = sceneText.match(sectionRegex);
+                return match ? match[1].trim() : '';
+            }
+
+            function normalizeSceneForFields(sceneText) {
+                const imagePrompt = extractSection(sceneText, 'Image Prompt');
+                return { image: imagePrompt || sceneText.trim(), video: sceneText.trim() };
+            }
+
+            function renderScenes(scenes) {
+                promptOutputContainer.innerHTML = '';
+                if (!scenes.length) return;
+                scenes.forEach((sceneText, index) => {
+                    const fields = normalizeSceneForFields(sceneText);
+                    const sceneDiv = document.createElement('div');
+                    sceneDiv.className = 'scene-card bg-slate-100 p-4 rounded-xl border-2 border-slate-300';
+                    sceneDiv.innerHTML = `
+                        <div class="mb-2"><label class="text-slate-700 font-semibold text-lg">ฉากที่ ${index + 1}:</label></div>
+                        <div class="mb-3">
+                            <textarea class="image-prompt-field w-full min-h-[5rem] p-2 rounded-lg bg-white border mb-2">${fields.image}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="video-prompt-field w-full min-h-[5rem] p-2 rounded-lg bg-white border mb-2">${fields.video}</textarea>
+                        </div>
+                        <button class="copy-scene-button bg-slate-300 p-2 rounded-lg w-full font-bold">คัดลอกทั้งฉาก</button>`;
+                    promptOutputContainer.appendChild(sceneDiv);
+                    sceneDiv.querySelector('.copy-scene-button').addEventListener('click', handleCopyScene);
+                });
+                savePromptsButton.classList.remove('hidden');
+                copyAllButton.classList.remove('hidden');
+            }
+
+            expandButton.addEventListener('click', async () => {
+                const idea = ideaInput.value.trim();
+                const styleInfo = getContentStyleInstruction(contentStyleSelect.value);
+                const expansionPrompt = `คุณคือผู้กำกับ จงขยายไอเดียนี้เป็นโครงเรื่องรายฉากสำหรับวิดีโอ 9:16 คุมความต่อเนื่องอย่างละเอียด: "${idea}"`;
+                try {
+                    const result = await callGeminiApi(expansionPrompt, loadingIndicatorExpand, uploadedImageBase64, uploadedMimeType);
+                    expandedIdeaOutput.value = getGeneratedText(result).trim();
+                    autoResizeTextarea(expandedIdeaOutput);
+                } catch (e) {} finally { loadingIndicatorExpand.classList.add('hidden'); }
+            });
+
+            generateButton.addEventListener('click', async () => {
+                const ideaToUse = expandedIdeaOutput.value.trim() || ideaInput.value.trim();
+                const promptTemplate = `สร้างพรอมท์คู่ขนาด 9:16 (Image Prompt และ Video Prompt) ความยาวฉากละ 8 วินาที คุมรายละเอียด เสื้อผ้า หน้าตา และฉากให้มีความต่อเนื่องสมบูรณ์แบบ ห้ามมีตัวหนังสือหรือซับไตเติ้ลบนจอเด็ดขาด เรื่องย่อ: "${ideaToUse}"`;
+                try {
+                    const result = await callGeminiApi(promptTemplate, loadingIndicatorGenerate, uploadedImageBase64, uploadedMimeType);
+                    const text = getGeneratedText(result);
+                    const scenes = text.split('---').map(s => s.trim()).filter(Boolean);
+                    renderScenes(scenes);
+                } catch (e) {} finally { loadingIndicatorGenerate.classList.add('hidden'); }
+            });
+        });
+    </script>
+</body>
+</html>
